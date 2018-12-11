@@ -10,6 +10,7 @@ public class PeccoPayment extends PaymentResource {
 
     public static PeccoPayment create(CreatePeccoPaymentRequest request, Options options) {
         return HttpClient.create().post(options.getBaseUrl() + "/payment/pecco/auth",
+                getHttpProxy(options),
                 getHttpHeaders(request, options),
                 request,
                 PeccoPayment.class);

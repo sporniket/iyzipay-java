@@ -14,6 +14,7 @@ public class PeccoInitialize extends IyzipayResource {
 
     public static PeccoInitialize create(CreatePeccoInitializeRequest request, Options options) {
         return HttpClient.create().post(options.getBaseUrl() + "/payment/pecco/initialize",
+                getHttpProxy(options),
                 getHttpHeaders(request, options),
                 request,
                 PeccoInitialize.class);

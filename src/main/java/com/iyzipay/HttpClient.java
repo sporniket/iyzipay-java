@@ -1,18 +1,28 @@
-package com.iyzipay;
+package com.iyzipay ;
 
-import com.google.gson.Gson;
-import com.iyzipay.exception.HttpClientException;
+import static com.iyzipay.HttpMethod.DELETE ;
+import static com.iyzipay.HttpMethod.GET ;
+import static com.iyzipay.HttpMethod.POST ;
+import static com.iyzipay.HttpMethod.PUT ;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.ByteArrayInputStream ;
+import java.io.ByteArrayOutputStream ;
+import java.io.IOException ;
+import java.io.InputStream ;
+import java.io.OutputStream ;
+import java.io.UnsupportedEncodingException ;
+import java.net.HttpURLConnection ;
+import java.net.Proxy ;
+import java.net.URL ;
+import java.net.URLConnection ;
+import java.nio.charset.Charset ;
+import java.util.HashMap ;
+import java.util.Map ;
 
-import static com.iyzipay.HttpMethod.*;
+import javax.net.ssl.HttpsURLConnection ;
+
+import com.google.gson.Gson ;
+import com.iyzipay.exception.HttpClientException ;
 
 public class HttpClient {
 
@@ -30,43 +40,43 @@ public class HttpClient {
         return new HttpClient();
     }
 
-    public <T> T get(String url, Class<T> responseType) {
-        return exchange(url, GET, new HashMap<String, String>(), null, responseType);
+    public <T> T get(String url, Proxy proxy, Class<T> responseType) {
+        return exchange(url, proxy, GET, new HashMap<String, String>(), null, responseType);
     }
 
-    public <T> T get(String url, Map<String, String> headers, Object request, Class<T> responseType) {
-        return exchange(url, GET, headers, request, responseType);
+    public <T> T get(String url, Proxy proxy, Map<String, String> headers, Object request, Class<T> responseType) {
+        return exchange(url, proxy, GET, headers, request, responseType);
     }
 
-    public <T> T post(String url, Map<String, String> headers, Object request, Class<T> responseType) {
-        return exchange(url, POST, headers, request, responseType);
+    public <T> T post(String url, Proxy proxy, Map<String, String> headers, Object request, Class<T> responseType) {
+        return exchange(url, proxy, POST, headers, request, responseType);
     }
 
-    public <T> T put(String url, Map<String, String> headers, Object request, Class<T> responseType) {
-        return exchange(url, PUT, headers, request, responseType);
+    public <T> T put(String url, Proxy proxy, Map<String, String> headers, Object request, Class<T> responseType) {
+        return exchange(url, proxy, PUT, headers, request, responseType);
     }
 
-    public <T> T delete(String url, Map<String, String> headers, Object request, Class<T> responseType) {
-        return exchange(url, DELETE, headers, request, responseType);
+    public <T> T delete(String url, Proxy proxy, Map<String, String> headers, Object request, Class<T> responseType) {
+        return exchange(url, proxy, DELETE, headers, request, responseType);
     }
 
-    private <T> T exchange(String url, HttpMethod httpMethod, Map<String, String> headers, Object request, Class<T> responseType) {
+    private <T> T exchange(String url, Proxy proxy, HttpMethod httpMethod, Map<String, String> headers, Object request, Class<T> responseType) {
         Gson gson = new Gson();
         String body = gson.toJson(request);
         try {
             InputStream content = request == null ? null : new ByteArrayInputStream(body.getBytes(DEFAULT_CHARSET));
-            String response = send(url, httpMethod, content, headers);
+            String response = send(url, proxy, httpMethod, content, headers);
             return gson.fromJson(response, responseType);
         } catch (UnsupportedEncodingException e) {
             throw new HttpClientException(e.getMessage(), e);
         }
     }
 
-    private String send(String url, HttpMethod httpMethod, InputStream content, Map<String, String> headers) {
+    private String send(String url, Proxy proxy, HttpMethod httpMethod, InputStream content, Map<String, String> headers) {
         URLConnection raw;
         HttpsURLConnection conn = null;
         try {
-            raw = new URL(url).openConnection();
+            raw = (null != proxy) ? new URL(url).openConnection(proxy) : new URL(url).openConnection();
             conn = HttpsURLConnection.class.cast(raw);
 
             conn.setSSLSocketFactory(socketFactory);
